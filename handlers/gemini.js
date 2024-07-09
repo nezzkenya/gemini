@@ -53,8 +53,8 @@ async function Gemini(questions, res) {
     const aggregatedResult = {
       responses: jsonResponseArray.map((item, index) => ({
         is_true: item.is_true,
-        answer: questions[index].answer, // Assuming you want to compare with the correct answer
-        score: item.is_true ? 1 : 0, // Assuming 1 point for correct answers, 0 for incorrect
+        student_answer: questions[index].answer, // The student's answer
+        correct_answer: item.answer, // The correct answer provided by the AI
       })),
       total_score: total_score, // Calculate total score
       outof: outof,
