@@ -32,27 +32,37 @@ async function Gemini(questions, res) {
     // Parse the JSON response correctly
     let jsonResponseArray;
     try {
-      jsonResponseArray = JSON.parse(text);
+      jsonResponseArray = JSON.parse(text).questions; // Accessing `questions` array from the response
     } catch (error) {
       console.error("Error parsing JSON:", error);
       throw new Error("Failed to parse JSON response");
     }
+
+    // Ensure `jsonResponseArray` is an array
+    if (!Array.isArray(jsonResponseArray)) {
+      throw new Error("Invalid JSON format: Expected an array");
+    }
+
+    // Calculate total score
     const total_score = jsonResponseArray.reduce(
       (acc, item) => acc + (item.is_true ? 1 : 0),
       0
     );
-    // Calculate score for each object and aggregate into one document
+
+    // Calculate aggregated result
     const aggregatedResult = {
-      responses: jsonResponseArray.map((item) => ({
+      responses: jsonResponseArray.map((item, index) => ({
         is_true: item.is_true,
-        answer: item.answer,
+        answer: questions[index].answer, // Assuming you want to compare with the correct answer
         score: item.is_true ? 1 : 0, // Assuming 1 point for correct answers, 0 for incorrect
       })),
       total_score: total_score, // Calculate total score
       outof: outof,
       perc: Math.round((total_score / outof) * 100),
     };
-    console.log(aggregatedResult);
+
+    console.log("Aggregated Result:", aggregatedResult);
+
     // Store the aggregated result in the database as one document
     await db.collection("trials").insertOne(aggregatedResult);
 

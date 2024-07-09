@@ -2,6 +2,8 @@ import express from "express";
 import db from "../database/mongodb.js";
 import Gemini from "../handlers/gemini.js";
 import AllExams from "../handlers/allexams.js";
+import { ObjectId } from "mongodb";
+import FetchExam from "../handlers/exam.js";
 const router = express.Router();
 router.get("/", async (req, res) => {
   res.send("hii");
@@ -9,7 +11,11 @@ router.get("/", async (req, res) => {
 router.get("/all", async (req, res) => {
   await AllExams(res);
 });
-
+router.get("/exam/:id", async (req, res) => {
+  const id = req.params.id;
+  const mongoid = new ObjectId(id);
+  await FetchExam(mongoid, res);
+});
 router.post("/new", async (req, res) => {
   if (!req.body) return res.json("invalid request").status(403);
   let collection = await db.collection("exams");
