@@ -11,7 +11,8 @@ export default async function AllExams(res) {
         subject: 1,
         topic: 1,
       })
-      .sort({ date: -1 }) // Sort by date in descending order
+      .sort({ date: -1 })
+      .limit(10) // Sort by date in descending order
       .toArray();
     res.json(exams).status(200);
   } catch (error) {
