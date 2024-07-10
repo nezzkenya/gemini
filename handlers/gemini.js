@@ -11,7 +11,41 @@ async function Gemini(questions, res) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Constructing the prompt with all questions and expected answers
-    let prompt = `return a json object with two fields : "is_true" which is true or false and "answer" which provides the correct answer for the question\n`;
+    let prompt = `return a json object strictly like this  {
+  "questions": [
+    {
+      "question": "1. Calculate 345 + 212.",
+      "student_answer": "557",
+      "correct_answer": "557",
+      "is_correct": true
+    },
+    {
+      "question": "2. What is the product of 24 and 8?",
+      "student_answer": "192",
+      "correct_answer": "192",
+      "is_correct": true
+    },
+    {
+      "question": "3. Subtract 156 from 300.",
+      "student_answer": "144",
+      "correct_answer": "144",
+      "is_correct": true
+    },
+    {
+      "question": "4. Divide 84 by 7.",
+      "student_answer": "Not answered",
+      "correct_answer": "12",
+      "is_correct": false
+    },
+    {
+      "question": "5. Simplify: 3/4 + 2/3.",
+      "student_answer": "Not answered",
+      "correct_answer": "17/12",
+      "is_correct": false
+    }
+  ]
+} \n
+  the questions \n`;
 
     questions.forEach((q, index) => {
       prompt += `${index + 1}. ${q.question}\n student Answer: ${q.answer}\n\n`;
@@ -30,31 +64,40 @@ async function Gemini(questions, res) {
     console.log("Cleaned Response Text:", text);
 
     // Parse the JSON response correctly
-    let jsonResponseArray;
+    let jsonResponseArray = [];
     try {
-      jsonResponseArray = JSON.parse(text).questions; // Accessing `questions` array from the response
+      const parsedResponse = JSON.parse(text);
+      if (!Array.isArray(parsedResponse.questions)) {
+        throw new Error("Invalid JSON format: Expected 'questions' array");
+      }
+      jsonResponseArray = parsedResponse.questions.map((q) => {
+        const correctAnswer = q.correct_answer;
+        const isCorrect = questions.some((question) => {
+          // Assuming `question.correct_answer` is in the same format as `correctAnswer`
+          return question.answer === correctAnswer;
+        });
+        return {
+          is_correct: isCorrect,
+          correct_answer: correctAnswer,
+        };
+      });
     } catch (error) {
       console.error("Error parsing JSON:", error);
       throw new Error("Failed to parse JSON response");
     }
 
-    // Ensure `jsonResponseArray` is an array
-    if (!Array.isArray(jsonResponseArray)) {
-      throw new Error("Invalid JSON format: Expected an array");
-    }
-
     // Calculate total score
     const total_score = jsonResponseArray.reduce(
-      (acc, item) => acc + (item.is_true ? 1 : 0),
+      (acc, item) => acc + (item.is_correct ? 1 : 0),
       0
     );
 
     // Calculate aggregated result
     const aggregatedResult = {
       responses: jsonResponseArray.map((item, index) => ({
-        is_true: item.is_true,
+        is_correct: item.is_correct,
         student_answer: questions[index].answer, // The student's answer
-        correct_answer: item.answer, // The correct answer provided by the AI
+        correct_answer: item.correct_answer, // The correct answer provided by the AI
       })),
       total_score: total_score, // Calculate total score
       outof: outof,
