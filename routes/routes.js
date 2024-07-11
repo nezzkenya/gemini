@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 import FetchExam from "../handlers/exam.js";
 import GeminiCreate from "../handlers/createquestions.js";
 import SearchExams from "../handlers/search.js";
+import { AnswerQuiz } from "../handlers/answerquiz.js";
 const router = express.Router();
 router.get("/", async (req, res) => {
   res.send("hii");
@@ -49,6 +50,16 @@ router.get("/search", async (req, res) => {
   const searchTerm = req.query.q;
   try {
     await SearchExams(searchTerm, res);
+  } catch (error) {
+    console.log(error);
+    res.json("an error occurred").status(500);
+  }
+});
+
+router.post("/quiz", async (req, res) => {
+  const body = req.body.question;
+  try {
+    await AnswerQuiz(body, res);
   } catch (error) {
     console.log(error);
     res.json("an error occurred").status(500);

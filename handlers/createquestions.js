@@ -9,9 +9,12 @@ async function GeminiCreate(input, res) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+    // Get the current date in ISO format
+    const currentDate = new Date().toISOString();
+
     // Constructing the prompt with all questions and expected answers
     let prompt = `return a json object strictly like this containing 10 questions {
-  "date": "2024-07-09",
+  "date": "${currentDate}",
   "class": "10th Grade",
   "subject": "Biology",
   "topic": "Cell Biology",
