@@ -11,7 +11,7 @@ async function Gemini(questions, res) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Constructing the prompt with all questions and expected answers
-    let prompt = `return a json object strictly like this even if none of the questions are answered, reduce the marking stictness and return correct if the idea of the answer is the same  {
+    let prompt = `return a json object strictly like this even if none of the questions are answered also reduce the marking stictness, return correct if the idea is the same or the answer is not complete  {
   "questions": [
     {
       "question": "1. Calculate 345 + 212.",
